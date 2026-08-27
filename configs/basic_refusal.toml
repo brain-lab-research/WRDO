@@ -1,0 +1,51 @@
+[model]
+name = "Qwen/Qwen3-8B-Base"
+batch_size = 16
+max_response_length = 2048
+system_prompt = "You are a helpful assistant."
+
+[output]
+results_root = "results"
+wandb_project = "anonymized"
+save_best_model = false
+best_model_max_shard_size = "5GB"
+
+[selection]
+n_train = "all"
+n_val = "all"
+n_test = "all"
+sample_seed = 42
+filter_train = true
+filter_val = true
+kl_threshold = 0.1
+induce_refusal_threshold = 0.0
+prune_layer_percentage = 0.2
+
+[abliteration]
+max_weight = 1.0
+max_weight_position = 0.7
+min_weight = 1.0
+min_weight_distance = 1.0
+
+[evaluation]
+backend = "wildguard"
+evaluate_locality = false
+llamaguard_model_name = "meta-llama/Meta-Llama-Guard-2-8B"
+llamaguard_device = "cuda"
+llamaguard_dtype = "bfloat16"
+
+[mmlu]
+enabled = false
+dataset = "cais/mmlu"
+subset = "all"
+split = "test"
+mode = "zero_shot"
+answer_mode = "generate"
+n_shots = 0
+sample_size = "all"
+sample_seed = 42
+max_new_tokens = 2048
+store_predictions = true
+
+[benchmarks]
+enabled = []

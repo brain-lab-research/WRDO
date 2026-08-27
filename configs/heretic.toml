@@ -1,0 +1,70 @@
+[model]
+name = "Qwen/Qwen3-8B-Base"
+batch_size = 16
+max_response_length = 256
+system_prompt = "You are a helpful assistant."
+
+[output]
+results_root = "results"
+wandb_project = "anonymized"
+save_best_model = false
+best_model_max_shard_size = "5GB"
+
+[selection]
+# Dataset sampling for refusal-direction extraction and Heretic objective.
+# Mirrors basic_refusal's [selection]; `kl_threshold`/`induce_refusal_threshold`
+# are intentionally dropped (Heretic has its own kl-gate in [heretic]).
+n_train = "all"
+n_val = "all"
+n_test = "all"
+sample_seed = 42
+filter_train = true
+filter_val = true
+prune_layer_percentage = 0.0
+
+[heretic]
+mode = "attack"
+n_trials = 200
+n_startup_trials = 60
+seed = 42
+kl_divergence_scale = 1.0
+kl_divergence_target = 0.01
+# Auto-selection from the Pareto front: pick min-KL trial whose refusal count
+# is <= this threshold. Fallback: min refusals, tie-break by min KL.
+refusal_threshold_count = 0
+# Per-component AbliterationParameters search space (upstream defaults).
+max_weight_low = 0.8
+max_weight_high = 1.5
+max_weight_position_low_frac = 0.6
+max_weight_position_high_frac = 1.0
+min_weight_low = 0.0
+min_weight_high = 1.0
+min_weight_distance_low_frac = 0.05
+min_weight_distance_high_frac = 0.6
+direction_index_low_frac = 0.4
+direction_index_high_frac = 0.9
+scope_choices = ["global", "per layer"]
+orthogonalize_direction = true
+
+[evaluation]
+backend = "wildguard"
+evaluate_locality = false
+llamaguard_model_name = "meta-llama/Meta-Llama-Guard-2-8B"
+llamaguard_device = "cuda"
+llamaguard_dtype = "bfloat16"
+
+[mmlu]
+enabled = false
+dataset = "cais/mmlu"
+subset = "all"
+split = "test"
+mode = "zero_shot"
+answer_mode = "generate"
+n_shots = 0
+sample_size = "all"
+sample_seed = 42
+max_new_tokens = 2048
+store_predictions = true
+
+[benchmarks]
+enabled = []

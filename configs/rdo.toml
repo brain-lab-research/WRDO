@@ -1,0 +1,85 @@
+[model]
+name = "Qwen/Qwen3-8B-Base"
+batch_size = 16
+max_response_length = 2048
+system_prompt = "You are a helpful assistant."
+
+[output]
+results_root = "results"
+wandb_project = "anonymized"
+# Save the trained model as an HF-loadable artifact. In activation mode the
+# trained direction is baked into weights via Model.abliterate + embedding
+# orthogonalization right before saving (Arditi-equivalent image of the
+# activation-space ablation used during eval).
+save_best_model = false
+best_model_max_shard_size = "5GB"
+
+[selection]
+# Dataset sampling + seed-direction (basic_refusal.select_direction) thresholds.
+n_train = "all"
+n_val = "all"
+n_test = "all"
+sample_seed = 42
+filter_train = true
+filter_val = true
+kl_threshold = 0.1
+induce_refusal_threshold = 0.0
+prune_layer_percentage = 0.2
+
+[rdo]
+mode = "attack"
+seed = 42
+# Application of the trained direction at inference:
+#   "activation" — DEFAULT. Runtime hooks at 3 sites/layer (port of upstream
+#                  RDO's intervene_with_fn_vector_ablation). Honest comparison
+#                  baseline that exactly matches what the loss was optimized
+#                  against. Cannot be `save_pretrained`'d.
+#   "weights"    — heretic.Model.abliterate (triangular kernel on o_proj +
+#                  down_proj). Combine with `ablate_embedding=true` to close
+#                  the Arditi (2024) §5.2 gap with activation-space ablation.
+apply_method = "activation"
+ablate_embedding = false
+# AdamW + training loop.
+lr = 1e-2
+batch_size = 1
+effective_batch_size = 16
+epochs = 1
+patience = 5
+n_lr_reduce = 2
+# Loss weights.
+ablation_lambda = 1.0
+addition_lambda = 0.2
+retain_lambda = 1.0
+# Target generation (one-shot).
+num_target_tokens = 8
+target_generation_batch_size = 64
+
+[abliteration]
+# Applied via heretic.Model.abliterate after RDO training.
+max_weight = 1.0
+max_weight_position = 0.7
+min_weight = 1.0
+min_weight_distance = 1.0
+
+[evaluation]
+backend = "wildguard"
+evaluate_locality = false
+llamaguard_model_name = "meta-llama/Meta-Llama-Guard-2-8B"
+llamaguard_device = "cuda"
+llamaguard_dtype = "bfloat16"
+
+[mmlu]
+enabled = false
+dataset = "cais/mmlu"
+subset = "all"
+split = "test"
+mode = "zero_shot"
+answer_mode = "generate"
+n_shots = 0
+sample_size = "all"
+sample_seed = 42
+max_new_tokens = 2048
+store_predictions = true
+
+[benchmarks]
+enabled = []

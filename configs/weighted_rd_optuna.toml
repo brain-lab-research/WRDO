@@ -1,0 +1,83 @@
+[model]
+name = "Qwen/Qwen3-8B-Base"
+batch_size = 32
+max_response_length = 2048
+system_prompt = "You are a helpful assistant."
+
+[output]
+results_root = "results"
+git_lfs_auto_commit = false
+git_lfs_auto_push = false
+git_lfs_push_required = false
+git_lfs_force_push = false
+git_lfs_push_remote_name = "results-lfs"
+git_lfs_push_remote_url = ""
+git_lfs_push_branch = "main"
+wandb_project = "anonymized"
+save_best_model = false
+best_model_max_shard_size = "5GB"
+
+[data]
+direction_prompt_count = 128
+direction_prompt_seed = 42
+
+[grpo]
+n_groups = 4
+n_epochs = 10
+learning_rate = 1e-3
+noise_scale = 0.1
+ref_alpha = 1.0
+is_clip_ratio = 5.0
+clip_ratio = 0.2
+loss_agg_mode = "token-mean"
+beta_1 = 0.0
+beta_2 = 1000.0
+
+[abliteration]
+max_weight = 2.0
+max_weight_position = 0.7
+min_weight = 0.1
+min_weight_distance = 0.3
+
+[weights]
+mode = "scalar"
+init_type = "average"
+
+[optimizer]
+method = "optuna"
+
+[optuna]
+sampler = "tpe"
+n_trials = 50
+sampler_seed = 42
+weight_min = -2.0
+weight_max = 2.0
+
+[reward]
+metric = "harmfulness"
+sign = 1
+
+[evaluation]
+backend = "wildguard"
+evaluate_locality = false
+
+[mmlu]
+enabled = false
+dataset = "cais/mmlu"
+subset = "all"
+split = "test"
+mode = "zero_shot"
+answer_mode = "generate"
+n_shots = 0
+sample_size = "all"
+sample_seed = 42
+max_new_tokens = 2048
+store_predictions = true
+
+[academic_benchmarks]
+enabled = []
+sample_seed = 42
+store_predictions = true
+
+[benchmarks]
+enabled = []
